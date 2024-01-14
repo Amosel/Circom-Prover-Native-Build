@@ -1,0 +1,38 @@
+From 25f696b87af3cc4b0b482453d224b182017ca217 Mon Sep 17 00:00:00 2001
+From: Amos Elmaliah <amosel@gmail.com>
+Date: Tue, 7 Feb 2023 14:07:04 +0200
+Subject: [PATCH] TMP patch
+
+---
+ depends/ffiasm/c/misc.hpp | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/depends/ffiasm/c/misc.hpp b/depends/ffiasm/c/misc.hpp
+index 188ec57..829d964 100644
+--- a/depends/ffiasm/c/misc.hpp
++++ b/depends/ffiasm/c/misc.hpp
+@@ -1,11 +1,13 @@
+ #ifndef MISC_H
+ #define MISC_H
+ 
+-#include <omp.h>
+ #include <cstdint>
+ 
+ uint32_t log2 (uint32_t value);
+ 
++#ifdef USE_OPENMP
++#include <omp.h>
++
+ /**
+  * This object is used to temporarily change the max number of omp threads.
+  * When the object is destructed, the max threads is set to it's original value.
+@@ -26,5 +28,6 @@ public:
+ private:
+     uint32_t prev_max_threads;
+ };
++#endif
+ 
+ #endif // MISC_H
+-- 
+2.38.1
+
