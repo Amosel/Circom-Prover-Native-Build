@@ -30,3 +30,10 @@ clean:
 	rm -rf build_android build_android_x86_64 build_ios build_ios_sim package package_android \
 		package_android_x86_64 package_ios package_ios_simulator depends/gmp/package depends/gmp/package_android_arm64 \
 		depends/gmp/package_android_x86_64 depends/gmp/package_ios_arm64 depends/gmp/package_ios_x86_64 depends/gmp/package_ios_simulator
+
+clean_dependencies: 
+	rm -rf depends/gmp/package depends/gmp/package_android_arm64 \
+		depends/gmp/package_android_x86_64 depends/gmp/package_ios_arm64 depends/gmp/package_ios_x86_64 depends/gmp/package_ios_simulator
+
+clean_artifacts:
+	rm -rf build_android build_android_x86_64 build_ios build_ios_sim
