@@ -2,6 +2,7 @@ from jinja2 import Environment, FileSystemLoader
 import os
 import re
 import subprocess
+import argparse
 
 
 def get_circom_files(directory):
@@ -56,11 +57,14 @@ def validate_includes(circom_file_path):
     else:
         return "All included files are present."
 
-def clean():
+def clean(target, name):
+    os.system(f"rm -rf ./src/{name}.cpp")
+    os.system(f"rm -rf ./src/{name}.dat")
+
     while True:
         choice = input("Clean build folders? Y/n (anything else to skip): ")
         if choice.lower() == 'y':
-            for cmd in [f"rm -rf ./build-ios", f"rm -rf ./package_ios"]:
+            for cmd in [f"rm -rf ./build_{target}"]:
                 print(cmd)
                 os.system(cmd)
             return None
@@ -121,7 +125,6 @@ def compile_one(name, build_dir, proof_directory):
     os.system(f"mv ./{build_dir}/{name}_cpp/{name}.dat ./src")
     print(f"Cleaning...")
     os.system(f"rm -rf ./{build_dir}")
-
 
 def replace_tokens(string, tokens):
     for token in tokens:
@@ -220,24 +223,35 @@ def generate_from_tempalte(template_dir, names):
                 with open(output_file, 'w') as file:
                     file.write(output_content)
 
-def build_targets():
+def build_targets(target, dirty):
+    if dirty == False:
+        subprocess.run(['make', 'clean'], check=True)
     try:
-        # Run './build_gmp.sh ios'
-        subprocess.run(['./build_gmp.sh', 'ios'], check=True)
+        # Run './build_gmp.sh target'
+        subprocess.run(['sh', './build_gmp.sh', target], check=True)
 
-        # Run 'make ios'
-        subprocess.run(['make', 'ios'], check=True)
+        # Run 'make target'
+        subprocess.run(['make', target], check=True)
 
         # Run 'xcodebuild' with specified arguments
-        subprocess.run(['xcodebuild', '-target', 'install', '-configuration', 'Release', '-project', 'build_ios/circom.xcodeproj'], check=True)
+        if target == 'ios':
+            subprocess.run(['xcodebuild', '-target', 'install', '-configuration', 'Release', '-project', 'build_ios/circom.xcodeproj'], check=True)
 
         return "Build successful."
 
     except subprocess.CalledProcessError as e:
         return f"An error occurred: {e}"
 
+parser = argparse.ArgumentParser(description='Compile Circom circuits.')
+parser.add_argument('target', choices=["ios", "ios-simulator", "android_x86_64", "android", "host"], help='Path to the Circom proof directory')
+parser.add_argument('proof_directory', type=str, help='Path to the Circom proof directory')
+parser.add_argument('--dirty', action='store_true', help='Do not clean files from previous builds')
+args = parser.parse_args()
+proof_directory = args.proof_directory
+dirty = args.dirty
+
 def compile_circuits():
-    proof_directory = "proofs"  # Replace with the actual path to your proof directory
+    # Using the 'proof_directory' variable from the parsed arguments
     build_dir = "build-cpp"
     circom_files = get_circom_files(proof_directory)
     if len(circom_files) == 0:
@@ -249,16 +263,14 @@ def compile_circuits():
     validate_includes(f"./{proof_directory}/{circuit_name}.circom")
     compile_one(circuit_name, build_dir, proof_directory)
     
-    
-    clean_from_tempalte(
-        './template', list(map(lambda x: x.split('.')[0], circom_files)))
+    clean_from_tempalte('./template', list(map(lambda x: x.split('.')[0], circom_files)))
     generate_from_tempalte('./template', [circuit_name])
     
-    build_targets()
+    build_targets('ios', dirty=dirty)
     
     clean_from_tempalte('./template', [circuit_name])
-    
+    clean('ios', circuit_name)
     exit(0)
 
+
 compile_circuits()
-clean()
