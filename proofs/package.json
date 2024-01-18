@@ -1,0 +1,13 @@
+{
+  "name": "proofs",
+  "version": "1.0.0",
+  "description": "This folder includes the [circom](https://iden3.io/circom) zero knowledge proofs",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "circomlib": "^2.0.5"
+  }
+}
